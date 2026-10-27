@@ -1,0 +1,25 @@
+---
+services:
+  panel:
+    image: alireza7/s-ui
+    container_name: panel
+    hostname: "panel"
+    volumes:
+      - "./db:/app/db"
+      - "./cert:/app/cert"
+    tty: true
+    restart: unless-stopped
+    # Host-side ports are remapped; the container still listens on 2095/2096
+    # internally, so the healthcheck and the database settings stay untouched.
+    # Bound to 127.0.0.1 so only the reverse proxy (nginx/caddy) can reach them.
+    # Set PANEL_PORT / SUB_PORT in a .env file to pick your own values.
+    ports:
+      - "127.0.0.1:${PANEL_PORT:-38417}:2095"
+      - "127.0.0.1:${SUB_PORT:-38418}:2096"
+    networks:
+      - panel
+    entrypoint: "./entrypoint.sh"
+
+networks:
+  panel:
+    driver: bridge
